@@ -45,7 +45,7 @@ app.use(express.json());
 async function fetchStudentRecords() {
   try {
     const students = await Student.find();
-    console.log('Data served from MongoDB');
+    console.log('Data served from MongoDB:', students);
     return students;
   } catch (error) {
     console.error('Error fetching student records from MongoDB:', error);
@@ -82,8 +82,11 @@ async function getStudentRecordsFromRedis() {
 // GET API to fetch all student records
 app.get('/students', async (req, res) => {
   try {
-    let students = await fetchStudentRecords();
-    await storeStudentRecordsInRedis(students);
+    let students = await getStudentRecordsFromRedis();
+    if (!students) {
+      students = await fetchStudentRecords();
+      await storeStudentRecordsInRedis(students);
+    }
     res.json(students);
   } catch (error) {
     console.error('Error fetching student records:', error);
